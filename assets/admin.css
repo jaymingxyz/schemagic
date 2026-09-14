@@ -1,0 +1,338 @@
+/* Schemagic admin styles. Uses WordPress admin colors so it fits any core color scheme. */
+
+.schemagic-editor [hidden],
+.schemagic-media [hidden] {
+	display: none !important;
+}
+
+/* Tabs: hidden until JavaScript runs, so every section stays usable without it. */
+.schemagic-tabs {
+	display: none;
+}
+
+.schemagic-editor.has-tabs .schemagic-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 2px;
+	margin: 0 0 8px;
+	border-bottom: 1px solid #c3c4c7;
+}
+
+.schemagic-tab {
+	margin: 0 0 -1px;
+	padding: 10px 12px 8px;
+	border: 0;
+	border-bottom: 3px solid transparent;
+	background: none;
+	color: #50575e;
+	font-size: 13px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.schemagic-tab:hover {
+	color: #2271b1;
+}
+
+.schemagic-tab:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.schemagic-tab.is-active {
+	border-bottom-color: #2271b1;
+	color: #1d2327;
+	font-weight: 600;
+}
+
+.schemagic-editor.has-tabs .schemagic-panel {
+	display: none;
+}
+
+.schemagic-editor.has-tabs .schemagic-panel.is-active {
+	display: block;
+}
+
+.schemagic-panel__title {
+	margin: 1.5em 0 0.25em;
+	font-size: 14px;
+}
+
+.schemagic-editor.has-tabs .schemagic-panel__title {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+}
+
+/* Field rows */
+.schemagic-field {
+	display: grid;
+	grid-template-columns: minmax(140px, 200px) minmax(0, 1fr);
+	gap: 8px 20px;
+	padding: 14px 0;
+	border-top: 1px solid #f0f0f1;
+}
+
+.schemagic-panel .schemagic-field:first-of-type {
+	border-top: 0;
+}
+
+.schemagic-label {
+	font-weight: 600;
+}
+
+.schemagic-field__label {
+	padding-top: 5px;
+}
+
+.schemagic-field__control .description {
+	margin-top: 6px;
+}
+
+.schemagic-badge {
+	display: inline-block;
+	margin-left: 2px;
+	padding: 0 7px;
+	border-radius: 9px;
+	font-size: 11px;
+	font-weight: 500;
+	line-height: 18px;
+	vertical-align: 1px;
+	white-space: nowrap;
+}
+
+.schemagic-badge--required {
+	background: #fcf0f1;
+	color: #8a2424;
+}
+
+.schemagic-badge--recommended {
+	background: #f0f6fc;
+	color: #135e96;
+}
+
+.schemagic-input--short {
+	width: 12em;
+	max-width: 100%;
+}
+
+.schemagic-type-search {
+	display: block;
+	margin-bottom: 6px;
+}
+
+.schemagic-type-select,
+.schemagic-pages {
+	width: 25em;
+	max-width: 100%;
+}
+
+.schemagic-radios label {
+	display: block;
+	margin: 0 0 8px;
+}
+
+/* Weekly hours */
+.schemagic-hours {
+	border-collapse: collapse;
+}
+
+.schemagic-hours th,
+.schemagic-hours td {
+	padding: 4px 12px 4px 0;
+	vertical-align: top;
+}
+
+.schemagic-hours th {
+	width: 7em;
+	font-weight: 400;
+	line-height: 30px;
+	text-align: left;
+}
+
+.schemagic-hours__ranges.is-inactive {
+	visibility: hidden;
+}
+
+.schemagic-range {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin: 0 12px 4px 0;
+	white-space: nowrap;
+}
+
+.schemagic-hours__add {
+	line-height: 30px;
+}
+
+.schemagic-range__remove,
+.schemagic-special__remove {
+	padding: 2px 6px;
+	color: #b32d2e;
+	font-size: 18px;
+	line-height: 1;
+	text-decoration: none;
+}
+
+.schemagic-range__remove:hover,
+.schemagic-special__remove:hover {
+	color: #8a2424;
+}
+
+/* Special hours */
+.schemagic-special {
+	overflow-x: auto;
+}
+
+.schemagic-special__table {
+	max-width: 760px;
+}
+
+.schemagic-special__table th,
+.schemagic-special__table td {
+	vertical-align: middle;
+}
+
+/* Media pickers */
+.schemagic-media__preview {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.schemagic-media__preview:empty {
+	display: none;
+}
+
+.schemagic-media__thumb {
+	width: 80px;
+	height: 80px;
+	border: 1px solid #dcdcde;
+	border-radius: 2px;
+	background: #f6f7f7;
+	object-fit: cover;
+}
+
+.schemagic-media__remove {
+	margin-left: 8px;
+	color: #b32d2e;
+}
+
+/* Preview */
+.schemagic-preview__code {
+	max-height: 420px;
+	margin: 0;
+	padding: 12px 14px;
+	overflow: auto;
+	border-radius: 4px;
+	background: #1d2327;
+	color: #f0f0f1;
+	font-size: 12px;
+	line-height: 1.5;
+	white-space: pre;
+	tab-size: 2;
+}
+
+.schemagic-preview__code code {
+	padding: 0;
+	background: none;
+	color: inherit;
+	font-size: inherit;
+}
+
+.schemagic-preview__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+}
+
+.schemagic-preview__status {
+	color: #50575e;
+}
+
+/* Health check */
+.schemagic-health__score {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 0 0 12px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.schemagic-health__score--good {
+	--schemagic-meter-color: #00a32a;
+}
+
+.schemagic-health__score--ok {
+	--schemagic-meter-color: #dba617;
+}
+
+.schemagic-health__score--poor {
+	--schemagic-meter-color: #d63638;
+}
+
+.schemagic-health__meter {
+	display: block;
+	height: 8px;
+	border-radius: 4px;
+	background: linear-gradient(to right, var(--schemagic-meter-color) var(--schemagic-score), #dcdcde var(--schemagic-score));
+}
+
+.schemagic-health__list {
+	margin: 0;
+}
+
+.schemagic-health__item {
+	margin: 0 0 8px;
+	padding-left: 8px;
+	border-left: 3px solid #dba617;
+}
+
+.schemagic-health__item.is-error {
+	border-left-color: #d63638;
+}
+
+.schemagic-health__label {
+	font-weight: 600;
+}
+
+.schemagic-health__done {
+	margin: 0;
+	color: #007017;
+}
+
+@media screen and (max-width: 782px) {
+	.schemagic-field {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 6px;
+	}
+
+	.schemagic-field__label {
+		padding-top: 0;
+	}
+
+	.schemagic-hours,
+	.schemagic-hours tbody,
+	.schemagic-hours tr,
+	.schemagic-hours th,
+	.schemagic-hours td {
+		display: block;
+		width: auto;
+	}
+
+	.schemagic-hours tr {
+		padding: 8px 0;
+		border-top: 1px solid #f0f0f1;
+	}
+
+	.schemagic-hours__ranges.is-inactive {
+		display: none;
+	}
+}
