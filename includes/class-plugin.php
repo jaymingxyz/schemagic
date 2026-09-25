@@ -29,6 +29,7 @@ final class Plugin {
 		if ( is_admin() ) {
 			Location_Post_Type::admin_hooks();
 			Meta_Boxes::hooks();
+			Importer::hooks();
 			Settings::hooks();
 			Seo_Conflicts::hooks();
 

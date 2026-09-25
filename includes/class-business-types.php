@@ -106,6 +106,24 @@ final class Business_Types {
 	}
 
 	/**
+	 * How many levels below LocalBusiness a type sits (LocalBusiness is 0).
+	 *
+	 * @param string $type Type name.
+	 * @return int
+	 */
+	public static function depth( $type ) {
+		$types = self::all();
+		$depth = 0;
+
+		while ( isset( $types[ $type ] ) && '' !== $types[ $type ]['parent'] && $depth < 20 ) {
+			$type = $types[ $type ]['parent'];
+			++$depth;
+		}
+
+		return $depth;
+	}
+
+	/**
 	 * Map of type => parent, for the admin script.
 	 *
 	 * @return array<string, string>

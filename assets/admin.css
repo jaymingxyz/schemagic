@@ -308,6 +308,60 @@
 	color: #007017;
 }
 
+/* Import */
+.schemagic-import {
+	margin: 0 0 12px;
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #f6f7f7;
+}
+
+.schemagic-import > summary {
+	padding: 10px 12px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.schemagic-import > summary:focus-visible {
+	outline: 2px solid #2271b1;
+	outline-offset: -2px;
+}
+
+.schemagic-import__body {
+	padding: 0 12px 12px;
+}
+
+.schemagic-import__body > p:first-child {
+	margin-top: 0;
+}
+
+.schemagic-import__body textarea {
+	font-size: 12px;
+}
+
+.schemagic-import__actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 0;
+}
+
+.schemagic-import__actions .spinner {
+	float: none;
+	margin: 0;
+}
+
+.schemagic-import .notice {
+	margin: 10px 0 0;
+}
+
+.schemagic-import .notice ul {
+	margin: 0 0 0.5em;
+	padding-left: 1.5em;
+	list-style: disc;
+}
+
 @media screen and (max-width: 782px) {
 	.schemagic-field {
 		grid-template-columns: minmax(0, 1fr);

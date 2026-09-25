@@ -4,7 +4,7 @@ Add LocalBusiness structured data (JSON-LD) to your WordPress site by filling in
 
 | Requires WordPress | Tested up to | Requires PHP | Version | License |
 |---|---|---|---|---|
-| 6.0 | 7.0 | 7.4 | 0.1.0 | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
+| 6.0 | 7.0 | 7.4 | 1.0 | [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html) |
 
 ## Description
 
@@ -24,6 +24,7 @@ There is no Pro version. Nothing is locked, there are no upsells, and the plugin
 - Service-area businesses that don't show a street address
 - A health check showing what's required and what Google recommends
 - Live preview of the generated code, with a copy button and links to Google's Rich Results Test and the Schema.org Validator
+- Import existing schema: paste JSON-LD from another plugin or site and the form fills itself in
 - A `[schemagic]` shortcode to show the same details to visitors
 - A notice when another SEO plugin might add duplicate schema
 - Developer filters for the schema, fields, business types and capability
@@ -84,6 +85,12 @@ This shows chosen parts for a specific location. The location ID is in the addre
 
 Many SEO plugins add Organization schema, and some have local business add-ons. Turn off any local business schema feature in the other plugin so the markup isn't duplicated, then check a page with the Rich Results Test.
 
+### Can I import schema from another plugin or website?
+
+Yes. On a location's edit screen, open **Import existing schema**. Paste the JSON-LD, a whole `<script type="application/ld+json">` tag, or a page's HTML source, then click **Fill in fields**.
+
+Schemagic reads the business type, name, contact details, address, coordinates, opening hours, holiday hours, social links and more. Images are matched to your Media Library; images hosted elsewhere are skipped. If the code describes several businesses, choose which one to import. Check each tab, then click **Publish** or **Update**.
+
 ### What happens to my data if I delete the plugin?
 
 Nothing is deleted unless you turn on **Remove data on uninstall** in **Schemagic → Settings**.
@@ -106,7 +113,7 @@ Open an issue at [github.com/jaymingxyz/schemagic/issues](https://github.com/jay
 
 ## Changelog
 
-### 0.1.0
+### 1.0
 
 - First release.
 

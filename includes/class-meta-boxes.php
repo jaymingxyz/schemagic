@@ -77,6 +77,9 @@ final class Meta_Boxes {
 		wp_nonce_field( self::NONCE_ACTION, self::NONCE_NAME );
 
 		echo '<div class="schemagic-editor">';
+
+		// Open the import box on new locations, where it's most useful.
+		self::render_import( ! metadata_exists( 'post', $post->ID, Location_Post_Type::META_KEY ) );
 		echo '<div class="schemagic-tabs" role="tablist" aria-label="' . esc_attr__( 'Business details sections', 'schemagic' ) . '">';
 
 		foreach ( $sections as $id => $section ) {
@@ -114,6 +117,36 @@ final class Meta_Boxes {
 		}
 
 		echo '</div>';
+	}
+
+	/**
+	 * Collapsible box for pasting existing JSON-LD. The textarea has no name, so it's never saved.
+	 *
+	 * @param bool $open Whether to show it expanded.
+	 */
+	private static function render_import( $open ) {
+		?>
+		<details class="schemagic-import"<?php echo $open ? ' open' : ''; ?>>
+			<summary><?php esc_html_e( 'Import existing schema', 'schemagic' ); ?></summary>
+			<div class="schemagic-import__body">
+				<p>
+					<label for="schemagic-import-code">
+						<?php esc_html_e( 'Paste JSON-LD code, a <script type="application/ld+json"> tag, or a page\'s HTML source. Schemagic fills in every field it finds, replacing what\'s there. Nothing is saved until you click Publish or Update.', 'schemagic' ); ?>
+					</label>
+				</p>
+				<textarea id="schemagic-import-code" class="large-text code" rows="8" spellcheck="false" autocomplete="off" placeholder="<?php echo esc_attr( '{ "@context": "https://schema.org", "@type": "Dentist", "name": "…" }' ); ?>"></textarea>
+				<p class="schemagic-import__actions">
+					<button type="button" class="button" id="schemagic-import-run"><?php esc_html_e( 'Fill in fields', 'schemagic' ); ?></button>
+					<span class="schemagic-import__choose" hidden>
+						<label for="schemagic-import-choice"><?php esc_html_e( 'Business:', 'schemagic' ); ?></label>
+						<select id="schemagic-import-choice"></select>
+					</span>
+					<span class="spinner"></span>
+				</p>
+				<div id="schemagic-import-result" aria-live="polite"></div>
+			</div>
+		</details>
+		<?php
 	}
 
 	/**
@@ -694,16 +727,24 @@ final class Meta_Boxes {
 				'nonce'         => $is_editor ? wp_create_nonce( self::PREVIEW_ACTION ) : '',
 				'postId'        => $is_editor && $post ? (int) $post->ID : 0,
 				'typeParents'   => $is_editor ? Business_Types::parent_map() : array(),
+				'importAction'  => Importer::AJAX_ACTION,
+				'importNonce'   => $is_editor ? wp_create_nonce( Importer::AJAX_ACTION ) : '',
+				'fieldTypes'    => $is_editor ? wp_list_pluck( Fields::all(), 'type' ) : array(),
 				'i18n'          => array(
-					'chooseImage'  => __( 'Choose image', 'schemagic' ),
-					'choosePhotos' => __( 'Choose photos', 'schemagic' ),
-					'useImage'     => __( 'Use this image', 'schemagic' ),
-					'usePhotos'    => __( 'Use these photos', 'schemagic' ),
-					'copied'       => __( 'Copied.', 'schemagic' ),
-					'copyFailed'   => __( 'Copy failed. Select the code and copy it manually.', 'schemagic' ),
-					'updating'     => __( 'Updating preview…', 'schemagic' ),
-					'previewError' => __( 'Preview could not be updated. Your changes will still save.', 'schemagic' ),
-					'noMatches'    => __( 'No matching types', 'schemagic' ),
+					'chooseImage'   => __( 'Choose image', 'schemagic' ),
+					'choosePhotos'  => __( 'Choose photos', 'schemagic' ),
+					'useImage'      => __( 'Use this image', 'schemagic' ),
+					'usePhotos'     => __( 'Use these photos', 'schemagic' ),
+					'copied'        => __( 'Copied.', 'schemagic' ),
+					'copyFailed'    => __( 'Copy failed. Select the code and copy it manually.', 'schemagic' ),
+					'updating'      => __( 'Updating preview…', 'schemagic' ),
+					'previewError'  => __( 'Preview could not be updated. Your changes will still save.', 'schemagic' ),
+					'importEmpty'   => __( 'Paste some schema code first.', 'schemagic' ),
+					'importFailed'  => __( 'The code couldn\'t be imported. Please try again.', 'schemagic' ),
+					'importConfirm' => __( 'Importing replaces any field found in the code. Continue?', 'schemagic' ),
+					'importFilled'  => __( 'Filled in:', 'schemagic' ),
+					'importReview'  => __( 'Check each tab, then click Publish or Update to save.', 'schemagic' ),
+					'importNotes'   => __( 'Some details need your attention:', 'schemagic' ),
 				),
 			)
 		);

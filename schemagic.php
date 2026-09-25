@@ -3,7 +3,7 @@
  * Plugin Name:       Schemagic
  * Plugin URI:        https://github.com/jaymingxyz/schemagic
  * Description:       Add LocalBusiness structured data (JSON-LD) to your site by filling in a simple form. Every feature is free.
- * Version:           0.1.0
+ * Version:           1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Jay
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SCHEMAGIC_VERSION', '0.1.0' );
+define( 'SCHEMAGIC_VERSION', '1.0' );
 define( 'SCHEMAGIC_FILE', __FILE__ );
 define( 'SCHEMAGIC_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SCHEMAGIC_URL', plugin_dir_url( __FILE__ ) );

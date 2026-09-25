@@ -1,17 +1,26 @@
 /* global jQuery, wp */
 /**
- * Schemagic admin: tabs, business type search, hours, media pickers, live preview.
+ * Schemagic admin: tabs, business type search, hours, media pickers, schema import, live preview.
  */
 ( function ( $ ) {
 	'use strict';
 
 	var settings = window.schemagicAdmin || {};
 	var i18n = settings.i18n || {};
+
+	// Set by the init functions below, so the importer can reuse them.
 	var activateTab = function () {};
+	var setHours = function () {};
+	var setSpecialHours = function () {};
 
 	/** Tell the live preview something changed. */
 	function changed() {
 		$( document ).trigger( 'schemagic:changed' );
+	}
+
+	/** The form input for a field key. */
+	function fieldInput( key ) {
+		return $( '[name="schemagic[' + key + ']"]' );
 	}
 
 	/* ------------------------------------------------------------------ Tabs */
@@ -197,6 +206,27 @@
 			}
 		}
 
+		/** Replace one day's mode and ranges. */
+		function setDay( $day, mode, ranges ) {
+			var $cell = $day.find( '.schemagic-hours__ranges' );
+
+			$day.find( '.schemagic-hours__mode' ).val( mode );
+			$cell.find( '.schemagic-hours__list' ).empty();
+
+			( ranges || [] ).forEach( function ( range ) {
+				addRange( $cell, range.opens, range.closes );
+			} );
+
+			sync( $day );
+		}
+
+		setHours = function ( hours ) {
+			$( '.schemagic-hours__day' ).each( function () {
+				var row = hours[ $( this ).data( 'day' ) ] || { mode: 'closed', ranges: [] };
+				setDay( $( this ), row.mode, row.ranges );
+			} );
+		};
+
 		$( document ).on( 'change', '.schemagic-hours__mode', function () {
 			sync( $( this ).closest( 'tr' ) );
 		} );
@@ -229,17 +259,7 @@
 			} ).get();
 
 			[ 'tuesday', 'wednesday', 'thursday', 'friday' ].forEach( function ( day ) {
-				var $day = $table.find( 'tr[data-day="' + day + '"]' );
-				var $cell = $day.find( '.schemagic-hours__ranges' );
-
-				$day.find( '.schemagic-hours__mode' ).val( mode );
-				$cell.find( '.schemagic-hours__list' ).empty();
-
-				ranges.forEach( function ( range ) {
-					addRange( $cell, range.opens, range.closes );
-				} );
-
-				sync( $day );
+				setDay( $table.find( 'tr[data-day="' + day + '"]' ), mode, ranges );
 			} );
 
 			changed();
@@ -271,14 +291,37 @@
 			$table.prop( 'hidden', ! $table.find( 'tbody tr' ).length );
 		}
 
-		$wrap.on( 'click', '.schemagic-special__add', function () {
+		function addRow( values ) {
 			var html = template.split( '__INDEX__' ).join( String( counter++ ) );
 			var $row = $( $.parseHTML( html.trim() ) );
+
+			if ( values ) {
+				$row.find( '[name$="[from]"]' ).val( values.from || '' );
+				$row.find( '[name$="[through]"]' ).val( values.through || '' );
+				$row.find( '.schemagic-special__closed' ).prop( 'checked', !! values.closed );
+				$row.find( '[name$="[opens]"]' ).val( values.opens || '' );
+				$row.find( '[name$="[closes]"]' ).val( values.closes || '' );
+			}
 
 			$wrap.find( 'tbody' ).append( $row );
 			syncRow( $row );
 			syncTable();
-			$row.find( 'input' ).first().trigger( 'focus' );
+
+			return $row;
+		}
+
+		setSpecialHours = function ( rows ) {
+			$wrap.find( 'tbody' ).empty();
+
+			( rows || [] ).forEach( function ( row ) {
+				addRow( row );
+			} );
+
+			syncTable();
+		};
+
+		$wrap.on( 'click', '.schemagic-special__add', function () {
+			addRow().find( 'input' ).first().trigger( 'focus' );
 			changed();
 		} );
 
@@ -298,6 +341,26 @@
 	}
 
 	/* ---------------------------------------------------------------- Media */
+
+	/**
+	 * Show images in a picker and store their IDs.
+	 *
+	 * @param {jQuery} $box  The .schemagic-media wrapper.
+	 * @param {Array}  items Objects with id and url (thumbnail).
+	 */
+	function setMedia( $box, items ) {
+		var $preview = $box.find( '.schemagic-media__preview' ).empty();
+
+		items.forEach( function ( item ) {
+			$preview.append( $( '<img>', { src: item.url, alt: '', 'class': 'schemagic-media__thumb' } ) );
+		} );
+
+		$box.find( '.schemagic-media__value' ).val( items.map( function ( item ) {
+			return item.id;
+		} ).join( ',' ) ).trigger( 'change' );
+
+		$box.find( '.schemagic-media__remove' ).prop( 'hidden', ! items.length );
+	}
 
 	function initMedia() {
 		if ( ! window.wp || ! wp.media ) {
@@ -332,19 +395,16 @@
 				} );
 
 				frame.on( 'select', function () {
-					var ids = [];
-					var $preview = $box.find( '.schemagic-media__preview' ).empty();
-
-					frame.state().get( 'selection' ).each( function ( model ) {
+					var items = frame.state().get( 'selection' ).map( function ( model ) {
 						var attachment = model.toJSON();
-						var url = attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url;
 
-						ids.push( attachment.id );
-						$preview.append( $( '<img>', { src: url, alt: '', 'class': 'schemagic-media__thumb' } ) );
+						return {
+							id: attachment.id,
+							url: attachment.sizes && attachment.sizes.thumbnail ? attachment.sizes.thumbnail.url : attachment.url
+						};
 					} );
 
-					$box.find( '.schemagic-media__value' ).val( ids.join( ',' ) ).trigger( 'change' );
-					$box.find( '.schemagic-media__remove' ).prop( 'hidden', ! ids.length );
+					setMedia( $box, items );
 				} );
 
 				$box.data( 'frame', frame );
@@ -355,12 +415,195 @@
 
 		$( document ).on( 'click', '.schemagic-media__remove', function ( event ) {
 			event.preventDefault();
+			setMedia( $( this ).closest( '.schemagic-media' ), [] );
+		} );
+	}
 
-			var $box = $( this ).closest( '.schemagic-media' );
+	/* --------------------------------------------------------------- Import */
 
-			$box.find( '.schemagic-media__value' ).val( '' ).trigger( 'change' );
-			$box.find( '.schemagic-media__preview' ).empty();
-			$( this ).prop( 'hidden', true );
+	/**
+	 * Put the business name in the post title if that's empty, otherwise in the
+	 * Business name field (only when it differs from the title).
+	 */
+	function fillName( name ) {
+		var $title = $( '#title' );
+		var $name = fieldInput( 'name' );
+		var title = $title.length ? String( $title.val() ).trim() : '';
+
+		if ( $title.length && '' === title ) {
+			$title.val( name ).trigger( 'input' );
+			$( '#title-prompt-text' ).addClass( 'screen-reader-text' );
+			$name.val( '' );
+		} else if ( title === name ) {
+			$name.val( '' );
+		} else {
+			$name.val( name );
+		}
+	}
+
+	/**
+	 * Fill the form from imported data. Only keys present in data are changed.
+	 */
+	function fillForm( data, media ) {
+		var types = settings.fieldTypes || {};
+
+		Object.keys( data ).forEach( function ( key ) {
+			var value = data[ key ];
+			var $input = fieldInput( key );
+
+			switch ( types[ key ] ) {
+				case 'business_type':
+					// Clear any search filter so the imported type is in the list.
+					$( '.schemagic-type-search' ).val( '' ).trigger( 'input' );
+					$input.val( value ).trigger( 'change' );
+					break;
+
+				case 'checkbox':
+					$input.prop( 'checked', !! value );
+					break;
+
+				case 'lines':
+				case 'url_lines':
+					$input.val( [].concat( value ).join( '\n' ) );
+					break;
+
+				case 'image':
+				case 'gallery':
+					setMedia( $input.closest( '.schemagic-media' ), media[ key ] || [] );
+					break;
+
+				case 'hours':
+					setHours( value );
+					break;
+
+				case 'special_hours':
+					setSpecialHours( value );
+					break;
+
+				default:
+					if ( 'name' === key ) {
+						fillName( value );
+					} else {
+						$input.val( value );
+					}
+			}
+		} );
+
+		changed();
+	}
+
+	/** Whether any text field already has a value that an import could replace. */
+	function formHasData() {
+		return $( '#post' )
+			.find( 'input[type="text"][name^="schemagic["], input[type="tel"][name^="schemagic["], textarea[name^="schemagic["]' )
+			.filter( function () {
+				return '' !== String( this.value ).trim();
+			} ).length > 0;
+	}
+
+	function initImport() {
+		var $button = $( '#schemagic-import-run' );
+		var $code = $( '#schemagic-import-code' );
+		var $result = $( '#schemagic-import-result' );
+		var $choose = $( '.schemagic-import__choose' );
+		var $choice = $( '#schemagic-import-choice' );
+		var $spinner = $( '.schemagic-import__actions .spinner' );
+
+		if ( ! $button.length || ! settings.postId ) {
+			return;
+		}
+
+		function notice( type, message, items ) {
+			var $notice = $( '<div>', { 'class': 'notice inline notice-' + type } ).append( $( '<p>' ).text( message ) );
+
+			if ( items && items.length ) {
+				var $list = $( '<ul>' );
+
+				items.forEach( function ( item ) {
+					$list.append( $( '<li>' ).text( item ) );
+				} );
+
+				$notice.append( $list );
+			}
+
+			return $notice;
+		}
+
+		function showError( message ) {
+			$result.empty().append( notice( 'error', message || i18n.importFailed ) );
+		}
+
+		function showChoices( businesses, index ) {
+			$choice.empty();
+
+			if ( businesses.length < 2 ) {
+				$choose.prop( 'hidden', true );
+				return;
+			}
+
+			businesses.forEach( function ( label, i ) {
+				$choice.append( new Option( label, String( i ), false, i === index ) );
+			} );
+
+			$choose.prop( 'hidden', false );
+		}
+
+		function run( index ) {
+			var code = String( $code.val() ).trim();
+
+			if ( '' === code ) {
+				showError( i18n.importEmpty );
+				$code.trigger( 'focus' );
+				return;
+			}
+
+			$button.prop( 'disabled', true );
+			$spinner.addClass( 'is-active' );
+
+			$.post( settings.ajaxUrl, {
+				action: settings.importAction,
+				nonce: settings.importNonce,
+				post_id: settings.postId,
+				code: code,
+				index: index
+			} )
+				.done( function ( response ) {
+					if ( ! response || ! response.success ) {
+						showError( response && response.data && response.data.message );
+						return;
+					}
+
+					var result = response.data;
+
+					fillForm( result.data, result.media || {} );
+					showChoices( result.businesses || [], result.index );
+
+					$result.empty().append( notice( 'success', i18n.importFilled + ' ' + result.filled.join( ', ' ) + '. ' + i18n.importReview ) );
+
+					if ( result.notes && result.notes.length ) {
+						$result.append( notice( 'warning', i18n.importNotes, result.notes ) );
+					}
+				} )
+				.fail( function ( xhr ) {
+					var data = xhr.responseJSON && xhr.responseJSON.data;
+					showError( data && data.message );
+				} )
+				.always( function () {
+					$button.prop( 'disabled', false );
+					$spinner.removeClass( 'is-active' );
+				} );
+		}
+
+		$button.on( 'click', function () {
+			if ( formHasData() && ! window.confirm( i18n.importConfirm ) ) {
+				return;
+			}
+
+			run( 0 );
+		} );
+
+		$choice.on( 'change', function () {
+			run( parseInt( $choice.val(), 10 ) || 0 );
 		} );
 	}
 
@@ -464,6 +707,7 @@
 		initHours();
 		initSpecialHours();
 		initMedia();
+		initImport();
 		initCopy();
 		initPreview();
 	} );
